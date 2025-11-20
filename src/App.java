@@ -38,6 +38,11 @@ public class App {
                 break;
             }
 
+            if (!canSpell(input, hand)) {
+                System.out.println("Invalid word! You don't have the tiles for that. Try again.");
+                continue;
+            }
+
             int score = calculateScore(input, hand);
             totalScore += score;
             System.out.println("Word: " + input + " | Score: " + score + " | Total Score: " + totalScore);
@@ -93,6 +98,25 @@ public class App {
             int index = rand.nextInt(tiles.size());
             hand.add(tiles.remove(index));
         }
+    }
+
+    public static boolean canSpell(String word, ArrayList<Tile> hand) {
+        Map<Character, Integer> handCount = new HashMap<>();
+        for (Tile tile : hand) {
+            handCount.put(tile.getLetter(), handCount.getOrDefault(tile.getLetter(), 0) + 1);
+        }
+
+        Map<Character, Integer> wordCount = new HashMap<>();
+        for (char c : word.toCharArray()) {
+            wordCount.put(c, wordCount.getOrDefault(c, 0) + 1);
+        }
+
+        for (Map.Entry<Character, Integer> entry : wordCount.entrySet()) {
+            if (handCount.getOrDefault(entry.getKey(), 0) < entry.getValue()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public static int calculateScore(String word, ArrayList<Tile> hand) {
