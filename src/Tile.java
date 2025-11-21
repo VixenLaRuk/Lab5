@@ -1,3 +1,11 @@
+/**
+ * Represents a single Scrabble tile with a letter and
+ * point value. Each tile contains a character, its corresponding
+ * point value, and the quantity of the tile.
+ * @author Vixen La Ruk
+ * @author Peter Gian-Paolo Despues
+ * @since 11/18/2025
+ */
 public class Tile {
 
     private char letter;

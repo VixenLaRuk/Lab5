@@ -4,17 +4,29 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 
+/**
+ * This program is a simulation of the Scrabble game.
+ * @author Vixen La Ruk
+ * @author Peter Gian-Paolo Despues
+ * @since 11/18/2025
+ */
 public class App {
     private static ArrayList<Tile> tiles = new ArrayList<Tile>();
     private static Random rand = new Random();
     private static Scanner scanner = new Scanner(System.in);
 
+    /**
+     * The main method that starts and runs the Scrabble game. Players
+     * draw tiles from the bag, form words, and accumulate scores until
+     * no more tiles are available or the player chooses to quit.
+     * @param args command-line arguments
+     */
     public static void main(String[] args) {
         createAllTiles();
         ArrayList<Tile> hand = new ArrayList<Tile>();
         int totalScore = 0;
 
-        System.out.println("Welcome to Vixen's Scrabble!"); // holds the whole set of tiles.
+        System.out.println("Welcome to Vixen's Scrabble!");
 
         while (true) {
             refillHand(hand);
@@ -53,6 +65,12 @@ public class App {
         scanner.close();
     }
         
+    /**
+     * Initializes the complete tile bag with standard Scrabble tiles.
+     * Creates one tile for each letter with its corresponding point value
+     * and quantity according to standard Scrabble rules. Populates
+     * the static tiles ArrayList with all tiles in the game.
+     */
     public static void createAllTiles() {
         Map<Character, int[]> tileData = Map.ofEntries(
             Map.entry('E', new int[]{1, 12}),
@@ -93,6 +111,12 @@ public class App {
         }
     }
 
+    /**
+     * Refills the player's hand with random tiles drawn from the bag.
+     * Continues to draw tiles until the hand has 7 tiles or the bag is
+     * empty. Removes drawn tiles from the static tiles bag.
+     * @param hand the player's current hand of tiles to refill
+     */
     public static void refillHand(ArrayList<Tile> hand) {
         while (hand.size() < 7 && !tiles.isEmpty()) {
             int index = rand.nextInt(tiles.size());
@@ -100,6 +124,14 @@ public class App {
         }
     }
 
+    /**
+     * Determines if a word can be spelled using the tiles in the player's
+     * hand.
+     * @param word the word to check if it can be spelled
+     * @param hand the player's current hand of tiles
+     * @return true if all letters in the word are available in the hand
+     * with sufficient quantity, false otherwise
+     */
     public static boolean canSpell(String word, ArrayList<Tile> hand) {
         Map<Character, Integer> handCount = new HashMap<>();
         for (Tile tile : hand) {
@@ -119,6 +151,14 @@ public class App {
         return true;
     }
 
+    /**
+     * Calculates the score for a word based on the point values of
+     * its tiles. Sums the point value of each tile used in the word
+     * by checking the corresponding tiles in the player's hand.
+     * @param word the word to calculate the score for
+     * @param hand the player's current hand of tiles
+     * @return the total point value of the word
+     */
     public static int calculateScore(String word, ArrayList<Tile> hand) {
         int score = 0;
         Map<Character, Integer> handMap = new HashMap<>();
@@ -133,6 +173,12 @@ public class App {
         return score;
     }
 
+    /**
+     * Removes the tiles used to spell a word from the player's hand. Creates
+     * a frequency map of letters to remove
+     * @param word the tiles from the word that are removed
+     * @param hand the tiles removed from the player's hand
+     */
     public static void removeUsedTiles(String word, ArrayList<Tile> hand) {
         Map<Character, Integer> toRemove = new HashMap<>();
         for (char c : word.toCharArray()) {
