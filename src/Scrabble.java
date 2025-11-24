@@ -1,6 +1,4 @@
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -10,7 +8,7 @@ import java.util.Scanner;
  * @author Peter Gian-Paolo Despues
  * @since 11/18/2025
  */
-public class App {
+public class Scrabble {
     private static ArrayList<Tile> tiles = new ArrayList<Tile>();
     private static Random rand = new Random();
     private static Scanner scanner = new Scanner(System.in);
@@ -72,41 +70,20 @@ public class App {
      * the static tiles ArrayList with all tiles in the game.
      */
     public static void createAllTiles() {
-        Map<Character, int[]> tileData = Map.ofEntries(
-            Map.entry('E', new int[]{1, 12}),
-            Map.entry('A', new int[]{1, 9}),
-            Map.entry('I', new int[]{1, 9}),
-            Map.entry('O', new int[]{1, 8}),
-            Map.entry('N', new int[]{1, 6}),
-            Map.entry('R', new int[]{1, 6}),
-            Map.entry('T', new int[]{1, 6}),
-            Map.entry('L', new int[]{1, 4}),
-            Map.entry('S', new int[]{1, 4}),
-            Map.entry('U', new int[]{1, 4}),
-            Map.entry('D', new int[]{2, 4}),
-            Map.entry('G', new int[]{2, 3}),
-            Map.entry('B', new int[]{3, 2}),
-            Map.entry('C', new int[]{3, 2}),
-            Map.entry('M', new int[]{3, 2}),
-            Map.entry('P', new int[]{3, 2}),
-            Map.entry('F', new int[]{4, 2}),
-            Map.entry('H', new int[]{4, 2}),
-            Map.entry('V', new int[]{4, 2}),
-            Map.entry('W', new int[]{4, 2}),
-            Map.entry('Y', new int[]{4, 2}),
-            Map.entry('K', new int[]{5, 1}),
-            Map.entry('J', new int[]{8, 1}),
-            Map.entry('X', new int[]{8, 1}),
-            Map.entry('Q', new int[]{10, 1}),
-            Map.entry('Z', new int[]{10, 1})
-        );
 
-        for (Map.Entry<Character, int[]> entry : tileData.entrySet()) {
-            char letter = entry.getKey();
-            int value = entry.getValue()[0];
-            int count = entry.getValue()[1];
-            for (int i = 0; i < count; i++) {
-                tiles.add(new Tile(letter, value, count));
+        char[] letters = {'E', 'A', 'I', 'O', 'N', 'R', 'T', 'L', 'S', 'U', 
+                          'D', 'G', 'B', 'C', 'M', 'P', 'F', 'H', 'V', 'W', 
+                          'Y', 'K', 'J', 'X', 'Q', 'Z'};
+        int[] values = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                        2, 2, 3, 3, 3, 3, 4, 4, 4, 4,
+                        4, 5, 8, 8, 10, 10};
+        int[] counts = {12, 9, 9, 8, 6, 6, 6, 4, 4, 4,
+                        4, 3, 2, 2, 2, 2, 2, 2, 2, 2,
+                        2, 1, 1, 1, 1, 1};
+
+        for (int i = 0; i < letters.length; i++) {
+            for (int j = 0; j < counts[i]; j++) {
+                tiles.add(new Tile(letters[i], values[i], counts[i]));
             }
         }
     }
@@ -125,6 +102,38 @@ public class App {
     }
 
     /**
+     * Counts how many times a specific letter appears in the hand.
+     * @param letter the letter to count
+     * @param hand the player's current hand of tiles
+     * @return the count of the letter in the hand
+     */
+    private static int countLetterInHand(char letter, ArrayList<Tile> hand) {
+        int count = 0;
+        for (Tile tile : hand) {
+            if (tile.getLetter() == letter) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Counts how many times a specific letter appears in a word.
+     * @param letter the letter to count
+     * @param word the word to search in
+     * @return the count of the letter in the word
+     */
+    private static int countLetterInWord(char letter, String word) {
+        int count = 0;
+        for (int i = 0; i < word.length(); i++) {
+            if (word.charAt(i) == letter) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
      * Determines if a word can be spelled using the tiles in the player's
      * hand.
      * @param word the word to check if it can be spelled
@@ -133,22 +142,42 @@ public class App {
      * with sufficient quantity, false otherwise
      */
     public static boolean canSpell(String word, ArrayList<Tile> hand) {
-        Map<Character, Integer> handCount = new HashMap<>();
-        for (Tile tile : hand) {
-            handCount.put(tile.getLetter(), handCount.getOrDefault(tile.getLetter(), 0) + 1);
-        }
-
-        Map<Character, Integer> wordCount = new HashMap<>();
-        for (char c : word.toCharArray()) {
-            wordCount.put(c, wordCount.getOrDefault(c, 0) + 1);
-        }
-
-        for (Map.Entry<Character, Integer> entry : wordCount.entrySet()) {
-            if (handCount.getOrDefault(entry.getKey(), 0) < entry.getValue()) {
-                return false;
+        // Check each unique letter in the word
+        for (int i = 0; i < word.length(); i++) {
+            char letter = word.charAt(i);
+            // Only check each letter once (skip if we've seen it before in the word)
+            boolean alreadyChecked = false;
+            for (int j = 0; j < i; j++) {
+                if (word.charAt(j) == letter) {
+                    alreadyChecked = true;
+                    break;
+                }
+            }
+            
+            if (!alreadyChecked) {
+                int needed = countLetterInWord(letter, word);
+                int available = countLetterInHand(letter, hand);
+                if (available < needed) {
+                    return false;
+                }
             }
         }
         return true;
+    }
+
+    /**
+     * Finds the point value of a letter by searching through the hand.
+     * @param letter the letter to find the value for
+     * @param hand the player's current hand of tiles
+     * @return the point value of the letter, or 0 if not found
+     */
+    private static int getLetterValue(char letter, ArrayList<Tile> hand) {
+        for (Tile tile : hand) {
+            if (tile.getLetter() == letter) {
+                return tile.getValue();
+            }
+        }
+        return 0;
     }
 
     /**
@@ -161,38 +190,30 @@ public class App {
      */
     public static int calculateScore(String word, ArrayList<Tile> hand) {
         int score = 0;
-        Map<Character, Integer> handMap = new HashMap<>();
-        for (Tile tile : hand) {
-            handMap.put(tile.getLetter(), tile.getValue());
-        }
-        for (char c : word.toCharArray()) {
-            if (handMap.containsKey(c)) {
-                score += handMap.get(c);
-            }
+        for (int i = 0; i < word.length(); i++) {
+            char letter = word.charAt(i);
+            score += getLetterValue(letter, hand);
         }
         return score;
     }
 
     /**
-     * Removes the tiles used to spell a word from the player's hand. Creates
-     * a frequency map of letters to remove and removes the corresponding
-     * tiles from the hand.
+     * Removes the tiles used to spell a word from the player's hand.
      * @param word the tiles from the word that are removed
      * @param hand the tiles removed from the player's hand
      */
     public static void removeUsedTiles(String word, ArrayList<Tile> hand) {
-        Map<Character, Integer> toRemove = new HashMap<>();
-        for (char c : word.toCharArray()) {
-            toRemove.put(c, toRemove.getOrDefault(c, 0) + 1);
-        }
-
-        hand.removeIf(tile -> {
-            char letter = tile.getLetter();
-            if (toRemove.getOrDefault(letter, 0) > 0) {
-                toRemove.put(letter, toRemove.get(letter) - 1);
-                return true;
+        // For each letter in the word, find and remove one matching tile from hand
+        for (int i = 0; i < word.length(); i++) {
+            char letter = word.charAt(i);
+            // Find the first matching tile in hand and remove it
+            for (int j = 0; j < hand.size(); j++) {
+                if (hand.get(j).getLetter() == letter) {
+                    hand.remove(j);
+                    break; // Only remove one tile per letter occurrence
+                }
             }
-            return false;
-        });
+        }
     }
 }
+
